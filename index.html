@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Calculator</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #333333;
+      color: #ffffff;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .calculator {
+      background-color: #000000;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .calculator h1 {
+      text-align: center;
+      font-size: 36px;
+      font-weight: bold;
+      color: #ffa500;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #444444;
+      border-radius: 10px;
+      background-color: #333333;
+      color: #ffffff;
+    }
+
+    .input-group button {
+      margin-top: 10px;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background-color: #ffa500;
+      color: #ffffff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      background-color: #262626;
+      text-align: center;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #444444;
+    }
+
+    th {
+      background-color: #444444;
+      color: #ffa500;
+    }
+
+    td {
+      color: #ffffff;
+    }
+
+    tr:nth-child(even) {
+      background-color: #333333;
+    }
+
+    .affordability-results {
+      margin-top: 10px;
+      background-color: #262626;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #444444;
+    }
+
+    .minimized {
+      max-height: 100px;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #bbbbbb;
+      font-size: 14px;
+    }
+
+    footer a {
+      color: #ffa500;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h1>Loan Calculator</h1>
+
+    <!-- Language Toggle -->
+    <div class="input-group">
+      <label for="language">Language:</label>
+      <select id="language" onchange="switchLanguage()">
+        <option value="en">English</option>
+        <option value="ms">Malay</option>
+        <option value="zh">Chinese</option>
+      </select>
+    </div>
+
+    <!-- Loan Input -->
+    <div class="input-group">
+      <label id="loanAmountLabel" for="loanAmount">Loan Amount (RM):</label>
+      <input type="number" id="loanAmount" placeholder="Enter loan amount">
+    </div>
+    <button id="calculateButton">Calculate</button>
+    <div id="results"></div>
+
+    <!-- Affordability Calculator -->
+    <div class="input-group">
+      <label id="monthlyBudgetLabel" for="monthlyBudget">Monthly Budget (RM):</label>
+      <input type="number" id="monthlyBudget" placeholder="Enter your monthly budget">
+      <label id="affordDurationLabel" for="affordDuration">Preferred Duration (Months):</label>
+      <input type="number" id="affordDuration" placeholder="Enter loan duration in months">
+      <button id="affordabilityButton">Check Affordability</button>
+    </div>
+    <div id="affordabilityResult" class="affordability-results"></div>
+  </div>
+
+  <footer>
+    <p>&copy; 2024 Loan Calculator. Designed by <a href="https://github.com/Raa504" target="_blank">Laa</a></p>
+  </footer>
+
+  <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    const translations = {
+      en: {
+        title: "Loan Calculator",
+        loanAmountLabel: "Loan Amount (RM):",
+        monthlyBudgetLabel: "Monthly Budget (RM):",
+        affordDurationLabel: "Preferred Duration (Months):",
+        calculateButton: "Calculate",
+        affordabilityMessage: "Affordability Results",
+        interestRate: "Interest Rate (%)",
+        maxLoanAmount: "Maximum Loan Amount (RM)",
+      },
+      ms: {
+        title: "Pengira Pinjaman",
+        loanAmountLabel: "Jumlah Pinjaman (RM):",
+        monthlyBudgetLabel: "Bajet Bulanan (RM):",
+        affordDurationLabel: "Tempoh Dikehendaki (Bulan):",
+        calculateButton: "Kira",
+        affordabilityMessage: "Hasil Kemampuan",
+        interestRate: "Kadar Faedah (%)",
+        maxLoanAmount: "Jumlah Pinjaman Maksimum (RM)",
+      },
+      zh: {
+        title: "贷款计算器",
+        loanAmountLabel: "贷款金额 (RM):",
+        monthlyBudgetLabel: "每月预算 (RM):",
+        affordDurationLabel: "贷款时长（月）:",
+        calculateButton: "计算",
+        affordabilityMessage: "可承受贷款结果",
+        interestRate: "利率 (%)",
+        maxLoanAmount: "最高贷款金额 (RM)",
+      },
+    };
+
+    function switchLanguage() {
+      const lang = document.getElementById("language").value;
+      const t = translations[lang];
+      document.getElementById("loanAmountLabel").textContent = t.loanAmountLabel;
+      document.getElementById("monthlyBudgetLabel").textContent = t.monthlyBudgetLabel;
+      document.getElementById("affordDurationLabel").textContent = t.affordDurationLabel;
+    }
+
+    document.getElementById("calculateButton").addEventListener("click", function () {
+      const loanAmount = parseFloat(document.getElementById("loanAmount").value);
+      const rates = [6, 7, 8, 9, 10];
+      const maxMonths = 24;
+
+      if (isNaN(loanAmount) || loanAmount <= 0) {
+        alert("Please enter a valid loan amount.");
+        return;
+      }
+
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.classList.remove("minimized");
+      resultsDiv.innerHTML = ""; // Clear previous results
+
+      const table = document.createElement("table");
+      table.id = "loanTable";
+      const headerRow = `
+        <thead>
+          <tr>
+            <th>Month</th>
+            ${rates.map(rate => `<th>${rate}% Repayment (RM)</th>`).join('')}
+          </tr>
+        </thead>
+      `;
+      table.innerHTML = headerRow;
+
+      const tbody = document.createElement("tbody");
+
+      for (let month = 1; month <= maxMonths; month++) {
+        const row = document.createElement("tr");
+        let rowContent = `<td>${month}</td>`;
+
+        rates.forEach(rate => {
+          const monthlyInterest = loanAmount * (rate / 100);
+          const totalInterest = monthlyInterest * month;
+          const totalRepayment = loanAmount + totalInterest;
+          const monthlyRepayment = totalRepayment / month;
+
+          rowContent += `<td>RM ${monthlyRepayment.toFixed(2)}</td>`;
+        });
+
+        row.innerHTML = rowContent;
+        tbody.appendChild(row);
+      }
+
+      table.appendChild(tbody);
+      resultsDiv.appendChild(table);
+
+      $('#loanTable').DataTable();
+    });
+
+    // Affordability Calculation
+    document.getElementById("affordabilityButton").addEventListener("click", function () {
+      const budget = parseFloat(document.getElementById("monthlyBudget").value);
+      const duration = parseInt(document.getElementById("affordDuration").value);
+      const rates = [6, 7, 8, 9, 10];
+
+      if (isNaN(budget) || isNaN(duration) || budget <= 0 || duration <= 0) {
+        alert("Please enter valid budget and duration.");
+        return;
+      }
+
+      let resultHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Interest Rate (%)</th>
+              <th>Maximum Loan Amount (RM)</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      rates.forEach(rate => {
+        const maxLoan = budget * duration / (1 + rate / 100 * duration);
+        resultHTML += `
+          <tr>
+            <td>${rate}%</td>
+            <td>RM ${maxLoan.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+
+      resultHTML += "</tbody></table>";
+      document.getElementById("affordabilityResult").innerHTML = resultHTML;
+
+      // Minimize table when "Check Affordability" is clicked
+      document.getElementById("results").classList.add("minimized");
+    });
+  </script>
+</body>
+</html>
