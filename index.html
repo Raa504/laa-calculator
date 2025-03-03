@@ -165,10 +165,10 @@
         <tbody>`;
       
       rates.forEach(rate => {
-        const monthlyInterest = Math.round(loanAmount * (rate / 100));
-        const totalInterest = Math.round(monthlyInterest * loanMonths);
-        const totalRepayment = Math.round(loanAmount + totalInterest);
-        const monthlyRepayment = Math.round(totalRepayment / loanMonths);
+        const monthlyInterest = Math.ceil(loanAmount * (rate / 100) / 10) * 10;
+        const totalInterest = Math.ceil(monthlyInterest * loanMonths / 10) * 10;
+        const totalRepayment = Math.ceil((loanAmount + totalInterest) / 10) * 10;
+        const monthlyRepayment = Math.ceil(totalRepayment / loanMonths / 10) * 10;
         
         resultHTML += `
           <tr>
